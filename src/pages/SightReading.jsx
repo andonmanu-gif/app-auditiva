@@ -7,6 +7,8 @@ const DURATIONS = ['q']; // Quarter notes for simplicity initially
 
 export default function SightReading() {
     const [score, setScore] = useState([]);
+    const [userAnswer, setUserAnswer] = useState('');
+    const [feedback, setFeedback] = useState(null);
 
     const generateScore = () => {
         // Generate 4 random notes
@@ -15,6 +17,33 @@ export default function SightReading() {
             return `${note}:q`;
         });
         setScore(newScore);
+        setUserAnswer('');
+        setFeedback(null);
+    };
+
+    const checkAnswer = () => {
+        // Extract note names from score (e.g., "c/4:q" -> "c")
+        const correctNotes = score.map(s => s.split('/')[0].toUpperCase());
+
+        // Clean user input: remove spaces, commas, convert to uppercase
+        const userNotes = userAnswer
+            .toUpperCase()
+            .replace(/[,]/g, ' ')
+            .split(/\s+/)
+            .filter(n => n.length > 0);
+
+        // Compare
+        const isCorrect = correctNotes.length === userNotes.length &&
+            correctNotes.every((val, index) => val === userNotes[index]);
+
+        if (isCorrect) {
+            setFeedback({ type: 'success', message: '¡Correcto! Muy bien hecho.' });
+        } else {
+            setFeedback({
+                type: 'error',
+                message: `Incorrecto. La respuesta era: ${correctNotes.join(' ')}`
+            });
+        }
     };
 
     useEffect(() => {
@@ -33,10 +62,52 @@ export default function SightReading() {
                 <ScoreRenderer notes={score} width={400} height={150} />
             </div>
 
-            <button className="btn-primary" onClick={generateScore} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <RefreshCw size={20} />
-                Nueva Partitura
-            </button>
+            <div className="card" style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <label style={{ fontWeight: 'bold' }}>Escribe las notas (ej: C D E F):</label>
+                <input
+                    type="text"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    placeholder="Separa con espacios"
+                    style={{
+                        padding: '0.75rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid var(--border-color)',
+                        fontSize: '1rem'
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && checkAnswer()}
+                />
+
+                {feedback && (
+                    <div style={{
+                        padding: '0.75rem',
+                        borderRadius: '0.5rem',
+                        backgroundColor: feedback.type === 'success' ? '#dcfce7' : '#fee2e2',
+                        color: feedback.type === 'success' ? '#166534' : '#991b1b',
+                        textAlign: 'center'
+                    }}>
+                        {feedback.message}
+                    </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button
+                        className="btn-primary"
+                        onClick={checkAnswer}
+                        style={{ flex: 1 }}
+                    >
+                        Comprobar
+                    </button>
+                    <button
+                        className="btn-secondary"
+                        onClick={generateScore}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <RefreshCw size={20} />
+                        Nueva
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
