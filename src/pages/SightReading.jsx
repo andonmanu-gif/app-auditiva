@@ -3,7 +3,6 @@ import ScoreRenderer from '../features/sight-reading/ScoreRenderer';
 import { RefreshCw } from 'lucide-react';
 
 const NOTES = ['c/4', 'd/4', 'e/4', 'f/4', 'g/4', 'a/4', 'b/4', 'c/5'];
-const DURATIONS = ['q']; // Quarter notes for simplicity initially
 
 export default function SightReading() {
     const [score, setScore] = useState([]);
@@ -22,8 +21,22 @@ export default function SightReading() {
     };
 
     const checkAnswer = () => {
-        // Extract note names from score (e.g., "c/4:q" -> "c")
-        const correctNotes = score.map(s => s.split('/')[0].toUpperCase());
+        // Map English note names to Solfège
+        const noteMap = {
+            'C': 'DO',
+            'D': 'RE',
+            'E': 'MI',
+            'F': 'FA',
+            'G': 'SOL',
+            'A': 'LA',
+            'B': 'SI'
+        };
+
+        // Extract note names from score and convert to Solfège
+        const correctNotes = score.map(s => {
+            const noteLetter = s.split('/')[0].toUpperCase();
+            return noteMap[noteLetter];
+        });
 
         // Clean user input: remove spaces, commas, convert to uppercase
         const userNotes = userAnswer
@@ -58,12 +71,11 @@ export default function SightReading() {
             </div>
 
             <div className="card" style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '0.5rem' }}>
-                {/* VexFlow renders black text by default, so white background is safer for now */}
                 <ScoreRenderer notes={score} width={400} height={150} />
             </div>
 
             <div className="card" style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <label style={{ fontWeight: 'bold' }}>Escribe las notas (ej: C D E F):</label>
+                <label style={{ fontWeight: 'bold' }}>Escribe las notas (ej: Do Re Mi):</label>
                 <input
                     type="text"
                     value={userAnswer}
