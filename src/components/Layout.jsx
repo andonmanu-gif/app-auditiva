@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Music } from 'lucide-react';
+import MusicalChat from './MusicalChat';
 
 export default function Layout() {
     const location = useLocation();
@@ -29,6 +30,8 @@ export default function Layout() {
             <footer style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)', borderTop: '1px solid var(--bg-secondary)' }}>
                 <p>© 2025 MusicApp - Pedagogía Musical Interactiva</p>
             </footer>
+
+            <MusicalChat />
         </div>
     );
 }
