@@ -24,10 +24,26 @@ export default function IntervalGame() {
     const [currentInterval, setCurrentInterval] = useState(null);
     const [feedback, setFeedback] = useState(null); // 'correct' | 'incorrect'
     const [score, setScore] = useState({ correct: 0, total: 0 });
+    const [isLoaded, setIsLoaded] = useState(false);
     const synthRef = useRef(null);
 
     useEffect(() => {
-        synthRef.current = new Tone.Synth().toDestination();
+        const sampler = new Tone.Sampler({
+            urls: {
+                "C4": "C4.mp3",
+                "D#4": "Ds4.mp3",
+                "F#4": "Fs4.mp3",
+                "A4": "A4.mp3",
+            },
+            release: 1,
+            baseUrl: "https://tonejs.github.io/audio/salamander/",
+            onload: () => {
+                setIsLoaded(true);
+            }
+        }).toDestination();
+
+        synthRef.current = sampler;
+
         return () => {
             if (synthRef.current) synthRef.current.dispose();
         };
@@ -50,9 +66,11 @@ export default function IntervalGame() {
     };
 
     const playNotes = (root, semitones) => {
+        if (!synthRef.current) return;
+
         const now = Tone.now();
         const rootFreq = Tone.Frequency(root);
-        const secondNote = rootFreq.transpose(semitones);
+        const secondNote = rootFreq.transpose(semitones).toNote(); // Convert back to note name for Sampler
 
         // Play melodically (ascending)
         synthRef.current.triggerAttackRelease(root, "8n", now);
@@ -83,9 +101,23 @@ export default function IntervalGame() {
     if (!started) {
         return (
             <div className="container" style={{ textAlign: 'center', padding: '4rem 0' }}>
-                <button className="btn-primary" onClick={startAudio} style={{ fontSize: '1.5rem', padding: '1rem 2rem', display: 'flex', alignItems: 'center', gap: '1rem', margin: '0 auto' }}>
-                    <Play size={32} />
-                    Comenzar Entrenamiento
+                <button
+                    className="btn-primary"
+                    onClick={startAudio}
+                    disabled={!isLoaded}
+                    style={{
+                        fontSize: '1.5rem',
+                        padding: '1rem 2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        margin: '0 auto',
+                        opacity: isLoaded ? 1 : 0.7,
+                        cursor: isLoaded ? 'pointer' : 'wait'
+                    }}
+                >
+                    {isLoaded ? <Play size={32} /> : null}
+                    {isLoaded ? "Comenzar Entrenamiento" : "Cargando sonidos..."}
                 </button>
             </div>
         );
